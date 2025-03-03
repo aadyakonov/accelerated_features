@@ -29,7 +29,7 @@ def parse_arguments():
     parser.add_argument('--gamma_steplr', type=float, default=0.5,
                         help='Gamma value for StepLR scheduler. Default is 0.5.')
     parser.add_argument('--training_res', type=lambda s: tuple(map(int, s.split(','))),
-                        default=(800, 608), help='Training resolution as width,height. Default is (800, 608).')
+                        default=(360, 480), help='Training resolution as width,height. Default is (800, 608).')
     parser.add_argument('--device_num', type=str, default='0',
                         help='Device number to use for training. Default is "0".')
     parser.add_argument('--dry_run', action='store_true',
