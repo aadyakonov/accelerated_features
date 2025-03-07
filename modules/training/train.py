@@ -8,6 +8,8 @@ import os
 import time
 import sys
 
+DEFAULT_N_STEPS = 160_000
+
 def parse_arguments():
     parser = argparse.ArgumentParser(description="XFeat training script.")
 
@@ -22,14 +24,14 @@ def parse_arguments():
                         help='Training scheme. xfeat_default uses both megadepth & synthetic warps.')
     parser.add_argument('--batch_size', type=int, default=10,
                         help='Batch size for training. Default is 10.')
-    parser.add_argument('--n_steps', type=int, default=160_000,
-                        help='Number of training steps. Default is 160000.')
+    parser.add_argument('--n_steps', type=int, default=DEFAULT_N_STEPS,
+                        help=f'Number of training steps. Default is {DEFAULT_N_STEPS}.')
     parser.add_argument('--lr', type=float, default=3e-4,
                         help='Learning rate. Default is 0.0003.')
     parser.add_argument('--gamma_steplr', type=float, default=0.5,
                         help='Gamma value for StepLR scheduler. Default is 0.5.')
     parser.add_argument('--training_res', type=lambda s: tuple(map(int, s.split(','))),
-                        default=(360, 480), help='Training resolution as width,height. Default is (800, 608).')
+                        default=(800, 600), help='Training resolution as width,height. Default is (800, 600).')
     parser.add_argument('--device_num', type=str, default='0',
                         help='Device number to use for training. Default is "0".')
     parser.add_argument('--dry_run', action='store_true',
@@ -75,9 +77,9 @@ class Trainer():
                        synthetic_root_path, 
                        ckpt_save_path, 
                        model_name = 'xfeat_default',
-                       batch_size = 10, n_steps = 160_000, lr= 3e-4, gamma_steplr=0.5, 
-                       training_res = (800, 608), device_num="0", dry_run = False,
-                       save_ckpt_every = 500):
+                       batch_size = 10, n_steps = DEFAULT_N_STEPS, lr= 3e-4, gamma_steplr=0.5,
+                       training_res = (800, 600), device_num="0", dry_run = False,
+                       save_ckpt_every = 100):
 
         self.dev = torch.device ('cuda' if torch.cuda.is_available() else 'cpu')
         self.net = XFeatModel().to(self.dev)
@@ -86,7 +88,7 @@ class Trainer():
         self.batch_size = batch_size
         self.steps = n_steps
         self.opt = optim.Adam(filter(lambda x: x.requires_grad, self.net.parameters()) , lr = lr)
-        self.scheduler = torch.optim.lr_scheduler.StepLR(self.opt, step_size=30_000, gamma=gamma_steplr)
+        self.scheduler = torch.optim.lr_scheduler.StepLR(self.opt, step_size=100, gamma=gamma_steplr)
 
         ##################### Synthetic COCO INIT ##########################
         if model_name in ('xfeat_default', 'xfeat_synthetic'):
@@ -97,11 +99,11 @@ class Trainer():
                                         out_resolution = training_res, 
                                         warp_resolution = training_res,
                                         sides_crop = 0.1,
-                                        max_num_imgs = 3_000,
+                                        max_num_imgs = 100,
                                         num_test_imgs = 5,
                                         photometric = True,
                                         geometric = True,
-                                        reload_step = 4_000
+                                        reload_step = 120
                                         )
         else:
             self.augmentor = None
