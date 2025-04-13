@@ -26,7 +26,7 @@ class MegaDepthDataset(Dataset):
                  min_overlap_score = 0.3, #0.3,
                  max_overlap_score = 1.0, #1,
                  load_depth = True,
-                 img_resize = (800,608), #or None
+                 img_resize = (800, 600), #or None
                  df=32,
                  img_padding=False,
                  depth_padding=True,
